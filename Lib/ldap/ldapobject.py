@@ -154,13 +154,18 @@ class SimpleLDAPObject:
   def _unbytesify_modlist(self, modlist):
     """Adapt a modlist according to bytes_mode.
 
-    A modlist is a tuple of (op, attr, value), where:
+    A modlist is a tuple of (op, attr, value) or (attr, value), where:
     - With bytes_mode ON, attr is converted from bytes to unicode
     - With bytes_mode OFF, attr is checked to be unicode
     - value is *always* bytes
     """
     if not PY2:
       return modlist
+    if modlist and len(modlist[0]) == 2:
+        return tuple(
+          (self._unbytesify_value(attr), val)
+          for attr, val in modlist
+        )
     return tuple(
       (op, self._unbytesify_value(attr), val)
       for op, attr, val in modlist
